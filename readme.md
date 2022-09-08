@@ -11,7 +11,7 @@ To run the tests:
     jest -i
 
 
-Test coverage at the start of project after running ``jest -i --coverage``:
+Test coverage at the start of project after running `jest -i --coverage`:`
 
 
 --------------------------|---------|----------|---------|---------|-------------------
