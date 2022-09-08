@@ -11,6 +11,7 @@ async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM companies");
 
+  //create some test data - Companies, Users, 3 of each.
   await Company.create(
       {
         handle: "c1",
@@ -62,14 +63,17 @@ async function commonBeforeAll() {
   });
 }
 
+//Begin DB transaction
 async function commonBeforeEach() {
   await db.query("BEGIN");
 }
 
+//Rollback DB Transaction
 async function commonAfterEach() {
   await db.query("ROLLBACK");
 }
 
+//End DB connection
 async function commonAfterAll() {
   await db.end();
 }
