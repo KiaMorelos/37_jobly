@@ -12,7 +12,7 @@ const { BadRequestError } = require("../expressError");
    * 
    * values: Object.values turns the values of the dataToUpdate into an array: [ "Chester", "Bennington"]
    * 
-   * Returns { setCols: "first_name = $1 , last_name = $2 ", values: [ "Chester", "Bennington" ]}
+   * Returns { setCols: `"first_name"=$1 , "last_name"=$2`, values: [ "Chester", "Bennington" ]} 
 **/
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
