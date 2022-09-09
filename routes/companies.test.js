@@ -96,6 +96,55 @@ describe("GET /companies", function () {
     });
   });
 
+  test("filtering of companies ok", async function(){
+    const resp = await request(app).get("/companies").query({minEmployees: "3"});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      companies: [
+        {
+          handle: "c3",
+          name: "C3",
+          description: "Desc3",
+          numEmployees: 3,
+          logoUrl: "http://c3.img",
+        },
+      ]
+    });
+  });
+
+  test("filtering minEmployees > maxEmployees should fail", async function(){
+    const resp = await request(app).get("/companies").query({minEmployees: "3", maxEmployees: "1"});
+    expect(resp.statusCode).toEqual(400);
+  });
+
+  test("filtering using all options should work", async function(){
+    const resp = await request(app).get("/companies").query({name: "C", minEmployees: "2", maxEmployees: "3"});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      companies: [
+        {
+          handle: "c2",
+          name: "C2",
+          description: "Desc2",
+          numEmployees: 2,
+          logoUrl: "http://c2.img",
+        },
+        {
+          handle: "c3",
+          name: "C3",
+          description: "Desc3",
+          numEmployees: 3,
+          logoUrl: "http://c3.img",
+        },
+      ]
+    });
+  });
+
+  test("filtering with invalid fields should fail", async function(){
+    const resp = await request(app).get("/companies").query({notvalid: "3", maxEmployees: "1"});
+    expect(resp.statusCode).toEqual(400);
+  });
+
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This

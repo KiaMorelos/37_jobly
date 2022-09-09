@@ -85,6 +85,89 @@ describe("findAll", function () {
       },
     ]);
   });
+
+  test("works: with a name filter", async function(){
+    let companies = await Company.findAll({name:"C2"});
+
+    expect(companies).toEqual(
+        [{
+          handle: "c2",
+          name: "C2",
+          description: "Desc2",
+          numEmployees: 2,
+          logoUrl: "http://c2.img",
+        }]
+      );
+  });
+
+  test("works: with a minEmployees filter", async function(){
+    let companies = await Company.findAll({minEmployees: 2});
+
+    expect(companies).toEqual(
+        [{
+          handle: "c2",
+          name: "C2",
+          description: "Desc2",
+          numEmployees: 2,
+          logoUrl: "http://c2.img",
+        },
+        {
+          handle: "c3",
+          name: "C3",
+          description: "Desc3",
+          numEmployees: 3,
+          logoUrl: "http://c3.img",
+        },]
+      );
+  });
+
+  test("works: with a maxEmployees filter", async function(){
+    let companies = await Company.findAll({minEmployees: 3});
+
+    expect(companies).toEqual(
+        [{
+          handle: "c3",
+          name: "C3",
+          description: "Desc3",
+          numEmployees: 3,
+          logoUrl: "http://c3.img",
+        },]
+      );
+  });
+
+  test("works with all filters on", async function(){
+    let companies = await Company.findAll({name:"c", minEmployees: "2", maxEmployees: "3"});
+
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+
+  test("should return an error if min employees is greater than maximum employees", async function () {
+    try {
+      await Company.findAll({ minEmployees: 3, maxEmployees: 1 });
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
+  test("no results should return empty array", async function(){
+    expect(await Company.findAll({name:"basking robins always finds out"})).toEqual([])
+  });
 });
 
 /************************************** get */
