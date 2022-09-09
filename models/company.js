@@ -44,7 +44,7 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Find all matches or Find all companies, depending on if search is passed.
    *
    * 
    * Optional filters set to empty object by default, so if any optional term is undefined, move on to the next thing, if all option searches are undefined, then simply find all companies, otherwise use the filters.
@@ -55,7 +55,7 @@ class Company {
    * collect all given values into an array. Use values.length to help create santized query `name =$1` to use with WHERE clauses.
    * 
    * then join all the passed in filters with AND: `WHERE name=$1 AND maxEmployees=$2`
-   * 
+   *  
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] or an empty array if no matches found. {companies: [] }
    * */
 
