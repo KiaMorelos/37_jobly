@@ -11,6 +11,10 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companySearchSchema = require("../schemas/searchCompanies.json");
+//company search schema came from https://codebeautify.org/json-to-json-schema-generator
+
+//the link provided to us at the beginning of this unit does not work the same way as it did at the time of Colt's filming the unit.
 
 const router = new express.Router();
 
@@ -52,7 +56,26 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    
+    const search = req.query;
+
+    //minEmployees and maxEmployees have to be converted from strings to numbers in order for query to validate/work
+
+    if(search.minEmployees !== undefined){
+      search.minEmployees = +search.minEmployees
+    }
+
+    if(search.maxEmployees !== undefined){
+      search.maxEmployees = +search.maxEmployees
+    }
+
+    //make sure the query contains what it's supposed to.
+    const validator = jsonschema.validate(req.query, companySearchSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+    const companies = await Company.findAll(search);
     return res.json({ companies });
   } catch (err) {
     return next(err);

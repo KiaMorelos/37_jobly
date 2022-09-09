@@ -46,18 +46,59 @@ class Company {
 
   /** Find all companies.
    *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * 
+   * Optional filters set to empty object by default, so if any optional term is undefined, move on to the next thing, if all option searches are undefined, then simply find all companies, otherwise use the filters.
+   * 
+   * Make sure that minEmployees in not greater than maxEmployees
+   * name values use pattern matching in the query. it looks for whats inside of the %__% and then uses postgres ILIKE to search without case senstivity.
+   * 
+   * collect all given values into an array. Use values.length to help create santized query `name =$1` to use with WHERE clauses.
+   * 
+   * then join all the passed in filters with AND: `WHERE name=$1 AND maxEmployees=$2`
+   * 
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...] or an empty array if no matches found. {companies: [] }
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
+  static async findAll(optionalFilters = {}) {
+    let baseQuery = `SELECT handle,
                   name,
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+           FROM companies`;
+
+           const { name, minEmployees, maxEmployees } = optionalFilters;
+
+           if(minEmployees > maxEmployees){
+            throw new BadRequestError("Minimum number of employees must not be greater than value of max number employees");
+           }
+
+           const values = [];
+           const wheres = [];
+
+           if(name !== undefined){
+            values.push(`%${name}%`);
+            wheres.push(`name ILIKE $${values.length}`);
+           }
+
+           if(minEmployees !== undefined){
+            values.push(minEmployees);
+            wheres.push(`num_employees >= $${values.length}`);
+           }
+
+           if(maxEmployees !== undefined) {
+            values.push(maxEmployees);
+            wheres.push(`num_employees <= $${values.length}`);
+           }
+
+           if(wheres.length > 0){
+            baseQuery += ` WHERE ${wheres.join(" AND ")}`;
+           }
+
+           baseQuery += ` ORDER BY name`;
+
+           const companiesRes = await db.query(baseQuery, values);
+
     return companiesRes.rows;
   }
 
