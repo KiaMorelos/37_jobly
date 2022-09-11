@@ -1,0 +1,59 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "http://example.com/example.json",
+    "title": "Root Schema",
+    "type": "object",
+    "default": {},
+    "required": [
+        "title",
+        "companyHandle"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "id": {
+            "title": "The id Schema",
+            "type": "integer",
+            "default": 0,
+            "examples": [
+                50
+            ]
+        },
+        "title": {
+            "title": "The title Schema",
+            "type": "string",
+            "default": "",
+            "examples": [
+                "Advertising account executive"
+            ]
+        },
+        "salary": {
+            "title": "The salary Schema",
+            "type": "integer",
+            "default": 0,
+            "examples": [
+                300000
+            ]
+        },
+        "equity": {
+            "title": "The equity Schema",
+            "type": "string",
+            "default": "0",
+            "pattern": "0|(0?\\.[0-9]+)"
+        },
+        "companyHandle": {
+            "title": "The companyHandle Schema",
+            "type": "string",
+            "default": "",
+            "examples": [
+                "qbp"
+            ]
+        }
+    },
+    "examples": [{
+        "id": 50,
+        "title": "Advertising account executive",
+        "salary": 300000,
+        "equity": "0.0913",
+        "companyHandle": "qbp"
+    }]
+}

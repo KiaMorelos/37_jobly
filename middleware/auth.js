@@ -44,25 +44,17 @@ function ensureLoggedIn(req, res, next) {
 
 //Frankly this function completely baffles me right now. It doesn't work how i would expect it to with && or ||, but || is the only option that makes the requirements work. I would've thought that this should use an &&
 function ensureAdminUser(req, res, next){
-  try {
     if(!res.locals.user || !res.locals.user.isAdmin) throw new ExpressError("YOU MUST BE AN ADMIN TO DO THAT", 401)
     return next()
-  } catch (err){
-    return next(err)
-  }
 }
 
 //This allows admins OR a regular user if the their username matches the request.params.username
 function ensureAdminOrCorrectUser (req, res, next){
-  try {
     const user = res.locals.user;
     if (!(user && (user.isAdmin || user.username === req.params.username))) {
       throw new UnauthorizedError();
     }
     return next();
-  } catch (err) {
-    return next(err);
-  }
 }
 
 
