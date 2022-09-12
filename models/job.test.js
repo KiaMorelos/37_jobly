@@ -70,6 +70,88 @@ describe("findAll", function () {
         }
       ]);
     });
+  
+    test("works with title filter", async function(){
+    let jobs = await Job.findAll({title: "1"});
+    expect(jobs).toEqual([
+      {   id: expect.any(Number),
+          title: "Test Job 1",
+          salary: 55000,
+          equity: "0.91",
+          companyHandle: "c2"
+      }
+    ])
+  });
+
+  test("works with minSalary filter", async function(){
+    let jobs = await Job.findAll({minSalary: 5000});
+    expect(jobs).toEqual([
+      {   id: expect.any(Number),
+          title: "Test Job 1",
+          salary: 55000,
+          equity: "0.91",
+          companyHandle: "c2"
+      },
+      {   id: expect.any(Number),
+        title: "Test Job 2",
+        salary: 25000,
+        equity: "0",
+        companyHandle: "c1"
+    },])
+  });
+
+  test("works with hasEquity filter set to true", async function(){
+    let jobs = await Job.findAll({hasEquity: true});
+    expect(jobs).toEqual([
+      {   id: expect.any(Number),
+          title: "Test Job 1",
+          salary: 55000,
+          equity: "0.91",
+          companyHandle: "c2"
+      },
+    ])
+  });
+
+  test("works with hasEquity filter set to false", async function(){
+    let jobs = await Job.findAll({hasEquity: false});
+    expect(jobs).toEqual([
+      {   id: expect.any(Number),
+        title: "Test Job 1",
+        salary: 55000,
+        equity: "0.91",
+        companyHandle: "c2"
+    },
+    {   id: expect.any(Number),
+        title: "Test Job 2",
+        salary: 25000,
+        equity: "0",
+        companyHandle: "c1"
+    },
+    {   id: expect.any(Number),
+        title: "Test Job 3",
+        salary: null,
+        equity: null,
+        companyHandle: "c3"
+    }
+    ])
+  });
+
+  test("works with all fields in use", async function(){
+    let jobs = await Job.findAll({title:"Test Job 1", minSalary: 55000, hasEquity: true});
+    expect(jobs).toEqual([
+      {   id: expect.any(Number),
+          title: "Test Job 1",
+          salary: 55000,
+          equity: "0.91",
+          companyHandle: "c2"
+      },
+    ])
+  });
+
+  test("returns empty array if no results", async function(){
+    let jobs = await Job.findAll({title:"Test Knitter", minSalary: 300000, hasEquity: true});
+    expect(jobs).toEqual([])
+  });
 });
 
 /************************************** get a job */

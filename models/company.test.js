@@ -166,7 +166,7 @@ describe("findAll", function () {
   });
 
   test("no results should return empty array", async function(){
-    expect(await Company.findAll({name:"basking robins always finds out"})).toEqual([])
+    expect(await Company.findAll({name:"baskin robins always finds out"})).toEqual([])
   });
 });
 

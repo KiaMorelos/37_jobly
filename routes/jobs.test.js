@@ -52,6 +52,78 @@ describe("GET /jobs", function () {
             ],
       });
     });
+
+
+  test("filtering of jobs ok with has equity", async function(){
+    const resp = await request(app).get("/jobs").query({hasEquity: true});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs: [
+        {   id: expect.any(Number),
+            title: "Test Job 1",
+            salary: 55000,
+            equity: "0.91",
+            companyHandle: "c1"
+        },
+      ]
+    });
+  });
+
+  test("filtering of jobs ok with minSalary", async function(){
+    const resp = await request(app).get("/jobs").query({minSalary: 25000});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs: [
+        {   id: expect.any(Number),
+            title: "Test Job 1",
+            salary: 55000,
+            equity: "0.91",
+            companyHandle: "c1"
+        },
+        {   id: expect.any(Number),
+            title: "Test Job 2",
+            salary: 25000,
+            equity: "0",
+            companyHandle: "c1"
+        },
+      ]
+    });
+  });
+
+  test("filtering of jobs ok with title", async function(){
+    const resp = await request(app).get("/jobs").query({title: "Test Job 3"});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs: [
+        {   id: expect.any(Number),
+            title: "Test Job 3",
+            salary: null,
+            equity: null,
+            companyHandle: "c3"
+        },
+      ]
+    });
+  });
+
+  test("filtering of jobs ok with all filters", async function(){
+    const resp = await request(app).get("/jobs").query({title: "1", minSalary:500, hasEquity: true});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs: [
+        {   id: expect.any(Number),
+            title: "Test Job 1",
+            salary: 55000,
+            equity: "0.91",
+            companyHandle: "c1"
+        },
+      ]
+    });
+  });
+
+  test("filtering of jobs fails with invalid fields", async function(){
+    const resp = await request(app).get("/jobs").query({nonsense: "and more nonsense", hasEquity: false});
+    expect(resp.statusCode).toEqual(400);
+  });
 });
 
 /************************************** GET /companies/:id */
