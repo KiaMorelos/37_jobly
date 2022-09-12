@@ -23,16 +23,53 @@ static async create({ title, salary, equity, companyHandle }){
     return job
 }
 
-//findAll jobs in the database
-static async findAll(optionalFilters = {}){
-    const result = await db.query(
-        `SELECT id, title, salary, equity, company_handle AS "companyHandle" FROM jobs ORDER BY title`
-    )
+/** Find all matches or Find all jobs, depending on if search is passed.
+   *
+   * 
+   * Optional filters set to empty object by default, so if any optional term is undefined, move on to the next thing, if all option searches are undefined, then simply find all jobs, otherwise use the filters.
+   * 
+   * title values use pattern matching in the query. it looks for whats inside of the %__% and then uses postgres ILIKE to search without case senstivity.
+   * 
+   * collect all given values into an array. Use values.length to help create santized query `name =$1` to use with WHERE clauses.
+   * 
+   * then join all the passed in filters with AND: `WHERE title=$1 AND minSalary >= $2`
+   *  
+   * Returns [{ id, title, salary, equity, companyHandle }, ...] or an empty array if no matches found. {jobs: [] }
+   * */
+  static async findAll(optionalFilters = {}){
+    let baseQuery =  `SELECT id, title, salary, equity, company_handle AS "companyHandle" FROM jobs `;
+    const { title, minSalary, hasEquity } = optionalFilters;
 
-    return result.rows;
+    const values = [];
+    const wheres = [];
+
+    if(title !== undefined){
+     values.push(`%${title}%`);
+     wheres.push(`title ILIKE $${values.length}`);
+    }
+
+    if(minSalary !== undefined){
+     values.push(minSalary);
+     wheres.push(`salary >= $${values.length}`);
+    }
+
+    if(hasEquity === true) {
+     wheres.push(`equity > 0`);
+    }
+
+    if(wheres.length > 0){
+     baseQuery += ` WHERE ${wheres.join(" AND ")}`;
+    }
+
+    baseQuery += ` ORDER BY title`;
+
+    const jobsRes = await db.query(baseQuery, values);
+
+return jobsRes.rows;
 }
 
-//get job by id
+//get job by int id, like 7
+//returns {job : { id, title, salary, equity, companyHandle }} or not found error if there is no job with that id
 static async get(id){
     const result = await db.query(
         `SELECT id,
@@ -52,7 +89,8 @@ static async get(id){
     return result.rows[0]
 }
 
-//update passed in data on job with correct id
+//update passed in data on job with correct int id in the database
+//returns {job : { id, title, salary, equity, companyHandle }} or not found error if there is no job with that id
 static async update(id, data){
 
     const { setCols, values } = sqlForPartialUpdate(
@@ -84,7 +122,7 @@ static async update(id, data){
     return job;
 }
 
-//delete job with given id
+//delete job with given id from db
 static async remove(id){
     const result = await db.query(
         `DELETE from jobs WHERE id =$1 RETURNING id`, [id]

@@ -11,15 +11,41 @@ const Job = require("../models/job");
 
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
+const jobSearchSchema = require("../schemas/searchJobs.json");
 //json schemas came from: https://jsonschema.net/
 //NOTE: MUST SIGN UP FOR AN ACCOUNT TO GENERATE SCHEMAS
 
 const router = new express.Router();
 
-//get general list of jobs
-router.get("/", async function (req, res, next) {
+/** GET /  =>
+ *   { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
+ *
+ * Can filter on provided search filters:
+ * - minSalary
+ * - hasEquity
+ * - title (will find case-insensitive, partial matches)
+ *
+ * Authorization required: none
+ */router.get("/", async function (req, res, next) {
     try {
-      const jobs = await Job.findAll();
+
+      const search = req.query;
+
+        // have to convert seach string into an int/bool
+
+        if(search.minSalary !== undefined){
+          search.minSalary = +search.minSalary
+        }      
+        
+        search.hasEquity = search.hasEquity === "true";
+
+      const validator = jsonschema.validate(req.query, jobSearchSchema);
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+      }
+
+      const jobs = await Job.findAll(search);
       return res.json({ jobs });
     } catch (err) {
       return next(err);
@@ -37,7 +63,8 @@ router.get("/:id", async function (req, res, next) {
   });
 
 
-//add a new job - {
+//add a new job - expects a request body like this : 
+//{
 //"title": "Professional Knitter and Yarn Artist",
 //"salary": 70000,
 //"equity": "0.0913",
@@ -60,7 +87,7 @@ router.post("/", ensureAdminUser, async function (req, res, next) {
 });
 
 //Update an existing job. Provide an id, and at least a title to update a job posting
-//{title: Profession Crocheter }
+//{title: Professional Crocheter }
 router.patch("/:id", ensureAdminUser, async function(req, res, next){
   try {
     
