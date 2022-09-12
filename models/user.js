@@ -96,12 +96,41 @@ class User {
     return user;
   }
 
+    /** Apply for job with given username, jobId
+   *
+   * Returns job_id
+   *
+   * Throws NotFoundError on if job id or username does not exist.
+   **/
+  static async applyForJob(username, jobId){
+    const userExists = await db.query(`
+    SELECT username FROM users WHERE username = $1`, [username])
+
+    if(!userExists.rows[0]){
+      throw new NotFoundError(`This user does not exist: ${username}`)
+    }
+
+    const jobIdExists = await db.query(`
+    SELECT id FROM jobs WHERE id = $1`, [jobId])
+
+    if(!jobIdExists.rows[0]){
+      throw new NotFoundError(`This job id does not exist: ${jobId}` )
+    }
+
+
+    const result = await db.query(`
+    INSERT INTO applications (username, job_id) VALUES ($1, $2)
+    RETURNING job_id`, [username, jobId])
+
+    return result.rows[0]
+  }
+
   /** Find all users.
    *
    * Returns [{ username, first_name, last_name, email, is_admin }, ...]
    **/
 
-  static async findAll() {
+  static async findAll() {``
     const result = await db.query(
           `SELECT username,
                   first_name AS "firstName",
@@ -111,14 +140,13 @@ class User {
            FROM users
            ORDER BY username`,
     );
-
     return result.rows;
   }
 
   /** Given a username, return data about user.
    *
-   * Returns { username, first_name, last_name, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
+   * Returns { username, first_name, last_name, is_admin, jobsAppliedFor }
+   *   where jobsAppliedFor is [jobId, jobId...]
    *
    * Throws NotFoundError if user not found.
    **/
@@ -138,6 +166,11 @@ class User {
     const user = userRes.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const jobsAppliedFor = await db.query(`
+    SELECT job_id FROM applications WHERE username = $1`, [username]);
+
+    user.jobsAppliedFor = jobsAppliedFor.rows.map(job => job.job_id);
 
     return user;
   }

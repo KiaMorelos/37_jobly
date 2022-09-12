@@ -6,6 +6,7 @@ const Company = require("../models/company");
 const Job = require("../models/job");
 
 const { createToken } = require("../helpers/tokens");
+const { application } = require("express");
 
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
@@ -88,6 +89,9 @@ async function commonBeforeAll() {
     companyHandle: "c3"
   });
 
+  
+  await User.applyForJob("u2", job1.id);
+
   return [job1.id, job2.id, job3.id]
 
 }
@@ -108,7 +112,7 @@ async function commonAfterAll() {
 }
 
 
-const u1Token = createToken({ username: "u1", isAdmin: true });
+const admin = createToken({ username: "u1", isAdmin: true });
 const u2Token = createToken({ username: "u2", isAdmin: false });
 
 
@@ -118,6 +122,6 @@ module.exports = {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  u1Token,
+  admin,
   u2Token,
 };

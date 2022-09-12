@@ -14,7 +14,11 @@ const {
   commonAfterAll,
 } = require("./_testCommon");
 
-beforeAll(commonBeforeAll);
+const testJobIds = [];
+
+beforeAll(async () => {
+testJobIds.push(...(await commonBeforeAll()))
+});
 beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
@@ -140,6 +144,7 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobsAppliedFor: []
     });
   });
 
@@ -205,6 +210,41 @@ describe("update", function () {
       fail();
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
+
+/************************************** apply for job */
+
+describe("apply for job", function(){
+  test("apply for job valid username and id works", async function(){
+    await User.applyForJob("u1", testJobIds[0]);
+    let user = await User.get("u1");
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "u1@email.com",
+      isAdmin: false,
+      jobsAppliedFor: [testJobIds[0]]
+    });
+  });
+
+  test("apply for job fails with invalid username", async function(){
+    try{
+      await User.applyForJob("idontexist", testJobIds[0]);
+      fail()
+    } catch(err){
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("apply for job fails with invalid job id", async function(){
+    try{
+      await User.applyForJob("u1", 0);
+      fail()
+    } catch(err){
+      expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
 });
